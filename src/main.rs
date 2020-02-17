@@ -2,6 +2,8 @@
 extern crate glium;
 extern crate image;
 
+mod sphere_gen;
+
 fn main() {
     use glium::{glutin, Surface};
 
