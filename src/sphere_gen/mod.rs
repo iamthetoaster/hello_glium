@@ -1,5 +1,7 @@
 // Module for generating equidistant points on a sphere
 
+
+// credit to @bduvenhage https://github.com/bduvenhage/Bits-O-Cpp/blob/master/geomtry/main_3D_fibo.cpp
 pub fn sphere(number_of_points: usize) -> Vec<[f32; 3]> {
     let mut result: Vec<[f32; 3]> = vec!();
 
@@ -30,6 +32,7 @@ fn square_distance(a: [f32; 3], b: [f32; 3]) -> f32{
     )
 }
 
+// credit to wikipedia https://en.wikipedia.org/wiki/Bowyer%E2%80%93Watson_algorithm
 pub fn delaunay(points: &Vec<[f32; 3]>) -> Vec<[[f32;3]; 3]> {
     let (
         mut max_x, mut max_y, mut max_z, 
