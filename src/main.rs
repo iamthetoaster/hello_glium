@@ -4,6 +4,8 @@ extern crate image;
 
 mod sphere_gen;
 
+use rtriangulate::{TriangulationPoint, triangulate};
+
 fn main() {
     use glium::{glutin, Surface};
 
@@ -19,11 +21,14 @@ fn main() {
     }
 
     implement_vertex!(Vertex, position, col);
+    
 
-    let vertex1 = Vertex { position: [-0.5, -0.5], col: [0.0, 1.0, 0.0, 1.0] };
-    let vertex2 = Vertex { position: [ 0.0,  0.5], col: [1.0, 0.0, 0.0, 1.0] };
-    let vertex3 = Vertex { position: [ 0.5, -0.25], col: [0.0, 0.0, 1.0, 1.0] };
-    let shape = vec![vertex1, vertex2, vertex3];
+    let sphere = sphere_gen::sphere(40);
+    let sphere = sphere.into_iter().map(|x| x);
+
+    let mut shape: Vec<Vertex> = Vec::new();
+
+    
 
     let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);

@@ -3,7 +3,7 @@
 
 // credit to @bduvenhage https://github.com/bduvenhage/Bits-O-Cpp/blob/master/geomtry/main_3D_fibo.cpp
 pub fn sphere(number_of_points: usize) -> Vec<[f32; 3]> {
-    let mut result: Vec<[f32; 3]> = vec!();
+    let mut result: Vec<[f32; 3]> = Vec::new();
 
     let two_phi = 5_f32.sqrt() + 1.0;
     let golden_angle = two_phi * std::f32::consts::PI;
@@ -25,11 +25,9 @@ pub fn sphere(number_of_points: usize) -> Vec<[f32; 3]> {
 }
 
 fn square_distance(a: [f32; 3], b: [f32; 3]) -> f32{
-    (
-        (a[0] - b[0]).powi(2) +
-        (a[1] - b[1]).powi(2) +
-        (a[2] - b[2]).powi(2)
-    )
+    (a[0] - b[0]).powi(2) +
+    (a[1] - b[1]).powi(2) +
+    (a[2] - b[2]).powi(2)
 }
 
 // credit to wikipedia https://en.wikipedia.org/wiki/Bowyer%E2%80%93Watson_algorithm
@@ -63,8 +61,8 @@ pub fn delaunay(points: &Vec<[f32; 3]>) -> Vec<[[f32;3]; 3]> {
     let mut triangulation: Vec<[[f32;3]; 3]> = vec!(super_triangle);
     
     for point in points {
-        let mut bad_triangles: Vec<[[f32;3]; 3]> = vec!();
-        let mut bad_triangle_indicies: Vec<usize> = vec!();
+        let mut bad_triangles: Vec<[[f32;3]; 3]> = Vec::new();
+        let mut bad_triangle_indicies: Vec<usize> = Vec::new();
         let mut index = 0_usize;
         for triangle in &triangulation {
             let (mut center_x, mut center_y, mut center_z) = (0_f32, 0_f32, 0_f32);
@@ -93,15 +91,17 @@ pub fn delaunay(points: &Vec<[f32; 3]>) -> Vec<[[f32;3]; 3]> {
                 }
             }
         }
-        for index in bad_triangle_indicies {
-            triangulation.remove(index);
+        let mut i = 0;
+        for index in 0..bad_triangle_indicies.len() {
+            triangulation.remove(index - i);
+            i += 1;
         }
         for edge in polygon {
             let new_triangle = [edge[0], edge[1], *point];
             triangulation.push(new_triangle);
         }
     }
-    let mut supers: Vec<usize> = vec!();
+    let mut supers: Vec<usize> = Vec::new();
     for i in 0..triangulation.len() {
         for corner_1 in &triangulation[i] {
             for corner_2 in &super_triangle {
@@ -111,8 +111,10 @@ pub fn delaunay(points: &Vec<[f32; 3]>) -> Vec<[[f32;3]; 3]> {
             }
         }
     }
-    for i in supers {
-        triangulation.remove(i);
+    let mut i = 0;
+    for j in supers {
+        triangulation.remove(j - i);
+        i += 1;
     }
 
     return triangulation;

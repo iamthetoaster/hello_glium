@@ -10,3 +10,4 @@ edition = "2018"
 glium = "0.25.1"
 glutin = "0.22.0"
 image = "0.22.3"
+rtriangulate = "0.3" #temporary
