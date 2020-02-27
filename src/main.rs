@@ -3,6 +3,8 @@ extern crate glium;
 extern crate image;
 
 mod sphere_gen;
+mod obj_tools;
+mod types;
 use rand::prelude::*;
 
 fn main() {
@@ -21,6 +23,7 @@ fn main() {
 
     implement_vertex!(Vertex, position, col);
     
+    //obj_tools::parse_obj("src/obj_tools/icosahedron.obj");
 
     let ico = sphere_gen::icosahedron();
 
@@ -55,8 +58,10 @@ fn main() {
         uniform mat4 perspective;
 
         void main() {
-            gl_Position = translate * yRotation * xRotation * zRotation * scale * vec4(position, 1.0);
-            colr = col * ((-gl_Position.z + 1) / 2);
+            mat4 transform = yRotation * xRotation * zRotation * scale;
+            vec4 preTranslate = transform * vec4(position, 1.0);
+            colr = col * ((-preTranslate.z + 1) / 2);
+            gl_Position = perspective * translate * preTranslate;
         }
     "#;
 
@@ -82,9 +87,9 @@ fn main() {
         let mut target = display.draw();
         target.clear_color_and_depth((0.7, 0.7, 1.0, 1.0), 1.0);
 
-        let translate_vector = [0.0, 0.0, 0.0f32];
+        let translate_vector = [0.0, 0.0, 2.0f32];
 
-        let scale_vector = [0.7, 0.7, 0.7f32];
+        let scale_vector = [0.6, 0.6, 0.6f32];
 
         let rotation_vector = [0.5 * t, t, 0.25 * t];
 
@@ -93,7 +98,7 @@ fn main() {
             let aspect_ratio = height as f32 / width as f32;
         
             let fov: f32 = std::f32::consts::PI / 6.0;
-            let zfar = 2048.0;
+            let zfar = 10.0;
             let znear = 0.1;
         
             let f = 1.0 / (fov / 2.0).tan();
@@ -109,10 +114,10 @@ fn main() {
         let translate = {
             let [x, y, z] = translate_vector;
             [
-                [1.0, 0.0, 0.0,   x],
-                [0.0, 1.0, 0.0,   y],
-                [0.0, 0.0, 1.0,   z],
-                [0.0, 0.0, 0.0, 1.0f32]
+                [1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0],
+                [  x,   y,   z, 1.0f32]
             ]
         };
 
