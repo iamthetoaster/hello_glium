@@ -5,7 +5,7 @@ extern crate image;
 mod sphere_gen;
 mod obj_tools;
 mod types;
-use rand::prelude::*;
+
 
 fn main() {
     use glium::{glutin, Surface};
@@ -15,31 +15,13 @@ fn main() {
     let cb = glium::glutin::ContextBuilder::new().with_depth_buffer(24);
     let display = glium::Display::new(wb, cb, &events_loop).unwrap();
 
-    #[derive(Copy, Clone)]
-    struct Vertex {
-        position: [f32; 3],
-        col: [f32; 4]
+
+    //let ico = sphere_gen::icosahedron();
+
+    let shape = obj_tools::parse_uv_obj("src/obj_tools/icosahedron.obj");
+    for vert in &shape {
+        println!("{}", vert);
     }
-
-    implement_vertex!(Vertex, position, col);
-    
-    //obj_tools::parse_obj("src/obj_tools/icosahedron.obj");
-
-    let ico = sphere_gen::icosahedron();
-
-    let mut shape: Vec<Vertex> = Vec::new();
-
-    let mut rng = thread_rng();
-    for tri in ico {
-        let red: f32 = rng.gen();
-        let green: f32 = rng.gen();
-        let blue: f32 = rng.gen();
-        for point in &tri {
-            shape.push( Vertex { position: *point, col: [red, green, blue, 0.7] });
-        }
-    }
-
-    
 
     let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
@@ -47,8 +29,9 @@ fn main() {
     let vertex_shader_src = r#"
         #version 140
 
-        in vec3 position;
-        in vec4 col;
+        in vec4 position;
+        in vec4 normal;
+        in vec3 uv;
         out vec4 colr;
         uniform mat4 translate;
         uniform mat4 scale;
@@ -59,8 +42,9 @@ fn main() {
 
         void main() {
             mat4 transform = yRotation * xRotation * zRotation * scale;
-            vec4 preTranslate = transform * vec4(position, 1.0);
-            colr = col * ((-preTranslate.z + 1) / 2);
+            vec4 preTranslate = transform * position;
+            colr = normalize(normalize(normal) + vec4(1, 1, 1, 1));
+            colr.w = 1.0;
             gl_Position = perspective * translate * preTranslate;
         }
     "#;
@@ -87,7 +71,7 @@ fn main() {
         let mut target = display.draw();
         target.clear_color_and_depth((0.7, 0.7, 1.0, 1.0), 1.0);
 
-        let translate_vector = [0.0, 0.0, 2.0f32];
+        let translate_vector = [0.0, 0.0, 2.0];
 
         let scale_vector = [0.6, 0.6, 0.6f32];
 
@@ -97,17 +81,17 @@ fn main() {
             let (width, height) = target.get_dimensions();
             let aspect_ratio = height as f32 / width as f32;
         
-            let fov: f32 = std::f32::consts::PI / 6.0;
+            let fov: f32 = std::f32::consts::PI / 3.0;
             let zfar = 10.0;
             let znear = 0.1;
         
             let f = 1.0 / (fov / 2.0).tan();
         
             [
-                [f *   aspect_ratio   ,    0.0,              0.0              ,   0.0],
-                [         0.0         ,     f ,              0.0              ,   0.0],
-                [         0.0         ,    0.0,  (zfar+znear)/(zfar-znear)    ,   1.0],
-                [         0.0         ,    0.0, -(2.0*zfar*znear)/(zfar-znear),   0.0],
+                [f * aspect_ratio, 0.0,                            0.0,   0.0],
+                [             0.0,   f,                            0.0,   0.0],
+                [             0.0, 0.0,      (zfar+znear)/(zfar-znear),   1.0],
+                [             0.0, 0.0, -(2.0*zfar*znear)/(zfar-znear),   0.0],
             ]
         };
 
