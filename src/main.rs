@@ -36,8 +36,7 @@ fn main() {
         void main() {
             mat4 transform = yRotation * xRotation * zRotation * scale;
             vec4 preTranslate = transform * position;
-            colr = normalize(normalize(normal) + vec4(1, 1, 1, 1));
-            colr.w = 1.0;
+            colr = vec4(normalize(normalize(normal.xyz) + vec3(1, 1, 1)), .3);
             gl_Position = perspective * translate * preTranslate;
         }
     "#;
@@ -66,7 +65,7 @@ fn main() {
 
         let translate_vector = [0.0, 0.0, 2.0];
 
-        let scale_vector = [0.08, 0.08, 0.08f32];
+        let scale_vector = [0.7, 0.7, 0.7f32];
 
         let rotation_vector = [0.5 * t, t, 0.25 * t];
 
