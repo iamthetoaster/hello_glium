@@ -2,7 +2,6 @@
 extern crate glium;
 extern crate image;
 
-mod sphere_gen;
 mod obj_tools;
 mod types;
 
@@ -15,13 +14,7 @@ fn main() {
     let cb = glium::glutin::ContextBuilder::new().with_depth_buffer(24);
     let display = glium::Display::new(wb, cb, &events_loop).unwrap();
 
-
-    //let ico = sphere_gen::icosahedron();
-
-    let shape = obj_tools::parse_uv_obj("src/obj_tools/icosahedron.obj");
-    for vert in &shape {
-        println!("{}", vert);
-    }
+    let shape = obj_tools::parse_uv_obj("src/res/icosahedron.obj");
 
     let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
@@ -66,14 +59,14 @@ fn main() {
     let mut t: f32 = 0.0;
     let mut closed = false;
     while !closed {
-        t += 0.0006;
+        t += 0.005;
 
         let mut target = display.draw();
         target.clear_color_and_depth((0.7, 0.7, 1.0, 1.0), 1.0);
 
         let translate_vector = [0.0, 0.0, 2.0];
 
-        let scale_vector = [0.6, 0.6, 0.6f32];
+        let scale_vector = [0.08, 0.08, 0.08f32];
 
         let rotation_vector = [0.5 * t, t, 0.25 * t];
 

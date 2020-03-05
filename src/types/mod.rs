@@ -8,9 +8,9 @@
 
 #[derive(Copy, Clone)]
 pub struct TexturedVertex {
-    position: [f32; 4],
-    normal: [f32; 4],
-    uv: [f32; 3],
+    pub position: [f32; 4],
+    pub normal: [f32; 4],
+    pub uv: [f32; 3],
 }
 
 impl TexturedVertex {

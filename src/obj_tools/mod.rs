@@ -59,6 +59,7 @@ pub fn parse_uv_obj(file_name: &str) -> Vec<TexturedVertex> {
             uvs.push(uv);
         } else if l.starts_with("f ") {
             let mut contents = l[2..].split_whitespace();
+            let mut face: Vec<TexturedVertex> = Vec::new();
 
             loop {
                 match contents.next() {
@@ -93,13 +94,29 @@ pub fn parse_uv_obj(file_name: &str) -> Vec<TexturedVertex> {
                             }
                         ];
 
-                        triangles.push(TexturedVertex::new(position, normal, uv)); 
-                        println!("pushing vert {}", triangles.len());
+                        face.push(TexturedVertex::new(position, normal, uv));
                     },
                     None => break
                 }
             }
+            for i in 1..(face.len() - 1) {
+                triangles.push(face[0]);
+                triangles.push(face[i]);
+                triangles.push(face[i + 1]);
+            }
         }
     }
     return triangles;
+}
+
+pub fn sphereize(model: &Vec<TexturedVertex>) -> Vec<TexturedVertex> {
+    model.into_iter().map(|vert| {
+        let [mut x, mut y, mut z, _] = vert.position;
+        let len = (x * x + y * y + z * z).recip().sqrt();
+        x *= len;
+        y *= len;
+        z *= len;
+        
+        TexturedVertex::new([x, y, z, 1.0], [x, y, z, 0.0], vert.uv)
+    }).collect()
 }
