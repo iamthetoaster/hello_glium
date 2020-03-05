@@ -1,10 +1,4 @@
-// #[derive(Copy, Clone)]
-// pub struct ColoredVertex {
-//     position: [f32; 4],
-//     normal: [f32; 3],
-//     color: [f32; 4],
-// }
-// implement_vertex!(ColoredVertex, position, normal, color);
+use std::ops;
 
 #[derive(Copy, Clone)]
 pub struct TexturedVertex {
@@ -35,6 +29,104 @@ impl std::fmt::Display for TexturedVertex {
             self.normal[2], 
             self.normal[3], 
         )
+    }
+}
+
+impl ops::Add for &TexturedVertex {
+    type Output = TexturedVertex;
+    fn add(self, other: Self) -> TexturedVertex {
+        let mut position = [0.0, 0.0, 0.0, 0.0f32];
+        let mut normal = [0.0, 0.0, 0.0, 0.0f32];
+        let mut uv = [0.0, 0.0, 0.0f32];
+
+        for i in 0..4 {
+            position[i] = self.position[i] + other.position[i];
+            normal[i] = self.normal[i] + other.normal[i];
+        }
+        for i in 0..3 {
+            uv[i] = self.uv[i] + other.uv[i];
+        }
+
+        TexturedVertex{position: position, normal: normal, uv: uv}
+    }
+}
+
+impl ops::Sub for &TexturedVertex {
+    type Output = TexturedVertex;
+    fn sub(self, other: Self) -> TexturedVertex {
+        let mut position = [0.0, 0.0, 0.0, 0.0f32];
+        let mut normal = [0.0, 0.0, 0.0, 0.0f32];
+        let mut uv = [0.0, 0.0, 0.0f32];
+
+        for i in 0..4 {
+            position[i] = self.position[i] - other.position[i];
+            normal[i] = self.normal[i] - other.normal[i];
+        }
+        for i in 0..3 {
+            uv[i] = self.uv[i] - other.uv[i];
+        }
+
+        TexturedVertex{position: position, normal: normal, uv: uv}
+    }
+}
+
+impl ops::Mul<f32> for &TexturedVertex {
+    type Output = TexturedVertex;
+
+    fn mul(self, rhs: f32) -> Self::Output {
+        let mut position = [0.0, 0.0, 0.0, 0.0f32];
+        let mut normal = [0.0, 0.0, 0.0, 0.0f32];
+        let mut uv = [0.0, 0.0, 0.0f32];
+
+        for i in 0..4 {
+            position[i] = self.position[i] * rhs;
+            normal[i] = self.normal[i] * rhs;
+        }
+        for i in 0..3 {
+            uv[i] = self.uv[i] * rhs;
+        }
+
+        TexturedVertex{position: position, normal: normal, uv: uv}
+    }
+}
+
+impl ops::Div<f32> for &TexturedVertex {
+    type Output = TexturedVertex;
+
+    fn div(self, rhs: f32) -> Self::Output {
+        let mut position = [0.0, 0.0, 0.0, 0.0f32];
+        let mut normal = [0.0, 0.0, 0.0, 0.0f32];
+        let mut uv = [0.0, 0.0, 0.0f32];
+
+        for i in 0..4 {
+            position[i] = self.position[i] / rhs;
+            normal[i] = self.normal[i] / rhs;
+        }
+        for i in 0..3 {
+            uv[i] = self.uv[i] / rhs;
+        }
+
+        TexturedVertex{position: position, normal: normal, uv: uv}
+    }
+}
+
+impl ops::Neg for &TexturedVertex {
+    type Output = TexturedVertex;
+
+    fn neg(self) -> Self::Output {
+        let mut position = [0.0, 0.0, 0.0, 0.0f32];
+        let mut normal = [0.0, 0.0, 0.0, 0.0f32];
+        let mut uv = [0.0, 0.0, 0.0f32];
+
+        for i in 0..4 {
+            position[i] = -self.position[i];
+            normal[i] = -self.normal[i];
+        }
+        for i in 0..3 {
+            uv[i] = -self.uv[i];
+        }
+
+        TexturedVertex{position: position, normal: normal, uv: uv}
     }
 }
 

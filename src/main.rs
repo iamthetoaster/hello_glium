@@ -5,6 +5,8 @@ extern crate image;
 mod obj_tools;
 mod types;
 
+use obj_tools::*;
+
 
 fn main() {
     use glium::{glutin, Surface};
@@ -14,7 +16,7 @@ fn main() {
     let cb = glium::glutin::ContextBuilder::new().with_depth_buffer(24);
     let display = glium::Display::new(wb, cb, &events_loop).unwrap();
 
-    let shape = obj_tools::parse_uv_obj("src/res/icosahedron.obj");
+    let shape = sphereize(&subdivide(&parse_uv_obj("src/res/icosahedron.obj"), 10));
 
     let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
@@ -63,7 +65,7 @@ fn main() {
         let mut target = display.draw();
         target.clear_color_and_depth((0.7, 0.7, 1.0, 1.0), 1.0);
 
-        let translate_vector = [0.0, 0.0, 2.0];
+        let translate_vector = [0.0, 0.0, 2.0f32];
 
         let scale_vector = [0.7, 0.7, 0.7f32];
 
@@ -93,7 +95,7 @@ fn main() {
                 [1.0, 0.0, 0.0, 0.0],
                 [0.0, 1.0, 0.0, 0.0],
                 [0.0, 0.0, 1.0, 0.0],
-                [  x,   y,   z, 1.0f32]
+                [  x,   y,   z, 1.0]
             ]
         };
 
@@ -103,7 +105,7 @@ fn main() {
                 [  x, 0.0, 0.0, 0.0],
                 [0.0,   y, 0.0, 0.0],
                 [0.0, 0.0,   z, 0.0],
-                [0.0, 0.0, 0.0, 1.0f32],
+                [0.0, 0.0, 0.0, 1.0],
             ]
         };
 
@@ -113,7 +115,7 @@ fn main() {
                 [ ang.cos(), 0.0, ang.sin(), 0.0],
                 [       0.0, 1.0,       0.0, 0.0],
                 [-ang.sin(), 0.0, ang.cos(), 0.0],
-                [       0.0, 0.0,       0.0, 1.0f32]   
+                [       0.0, 0.0,       0.0, 1.0]   
             ]
         };
 
@@ -123,7 +125,7 @@ fn main() {
                 [1.0,       0.0,        0.0, 0.0],
                 [0.0, ang.cos(), -ang.sin(), 0.0],
                 [0.0, ang.sin(),  ang.cos(), 0.0],
-                [0.0,       0.0,        0.0, 1.0f32]
+                [0.0,       0.0,        0.0, 1.0]
             ]
         };
 
@@ -133,7 +135,7 @@ fn main() {
                 [ang.cos(), -ang.sin(), 0.0, 0.0],
                 [ang.sin(),  ang.cos(), 0.0, 0.0],
                 [       0.0,       0.0, 1.0, 0.0],
-                [       0.0,       0.0, 0.0, 1.0f32]   
+                [       0.0,       0.0, 0.0, 1.0]   
             ]
         };
 

@@ -2,6 +2,8 @@ use std::io::BufReader;
 use std::io::BufRead;
 use std::fs::File;
 
+
+
 use crate::types::TexturedVertex;
 
 pub fn parse_uv_obj(file_name: &str) -> Vec<TexturedVertex> {
@@ -132,4 +134,62 @@ pub fn sphereize(model: &Vec<TexturedVertex>) -> Vec<TexturedVertex> {
         
         TexturedVertex::new([x, y, z, 1.0], [x, y, z, 0.0], vert.uv)
     }).collect()
+}
+
+pub fn subdivide(model: &Vec<TexturedVertex>, factor: usize) -> Vec<TexturedVertex> {
+    let mut result: Vec<TexturedVertex> = Vec::new();
+
+    let mut iter = model.iter();
+    
+    loop {
+        let (a, b, c) = (
+            match iter.next() {
+                Some(value) => value,
+                None => break
+            }, 
+            match iter.next() {
+                Some(value) => value,
+                None => panic!("Model is not composed of triangles")
+            }, 
+            match iter.next() {
+                Some(value) => value,
+                None => panic!("Model is not composed of triangles")
+            }, 
+        );
+
+        let zero = a;
+        let u = &(b - zero) / (factor as f32);
+        let v = &(c - zero) / (factor as f32);
+
+        for i in 0..factor {
+            for j in 0..(factor - i) {
+                result.push(
+                    zero + &(&(&u * (i as f32)) + &(&v * (j as f32)))
+                );
+                result.push(
+                    zero + &(&(&u * ((i + 1) as f32)) + &(&v * (j as f32)))
+                );
+                result.push(
+                    zero + &(&(&u * (i as f32)) + &(&v * ((j + 1) as f32)))
+                );
+
+                if j > 0 {
+                    result.push(
+                        zero + &(&(&u * (i as f32)) + &(&v * (j as f32)))
+                    );
+                    result.push(
+                        zero + &(&(&u * ((i + 1) as f32)) + &(&v * ((j - 1) as f32)))
+                    );
+                    result.push(
+                        zero + &(&(&u * ((i + 1) as f32)) + &(&v * (j as f32)))
+                    );
+                }
+            }
+        }
+
+
+
+    }
+
+    result
 }
