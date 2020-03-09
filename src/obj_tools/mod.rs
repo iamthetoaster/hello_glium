@@ -6,6 +6,8 @@ use std::fs::File;
 
 use crate::types::TexturedVertex;
 
+
+// Reads obj files into a vector of vertices 
 pub fn parse_uv_obj(file_name: &str) -> Vec<TexturedVertex> {
     let f = File::open(file_name)
         .expect(&format!("File {} not found", file_name));
@@ -123,7 +125,7 @@ pub fn parse_uv_obj(file_name: &str) -> Vec<TexturedVertex> {
     return triangles;
 }
 
-// Projects any model onto a sphere 
+// Projects any triangle list onto a sphere 
 pub fn sphereize(model: &Vec<TexturedVertex>) -> Vec<TexturedVertex> {
     model.into_iter().map(|vert| {
         let [mut x, mut y, mut z, _] = vert.position;
@@ -136,6 +138,7 @@ pub fn sphereize(model: &Vec<TexturedVertex>) -> Vec<TexturedVertex> {
     }).collect()
 }
 
+// Takes in a triangle list, outputs a copy with factor^2 triangles
 pub fn subdivide(model: &Vec<TexturedVertex>, factor: usize) -> Vec<TexturedVertex> {
     let mut result: Vec<TexturedVertex> = Vec::new();
 
@@ -186,8 +189,46 @@ pub fn subdivide(model: &Vec<TexturedVertex>, factor: usize) -> Vec<TexturedVert
                 }
             }
         }
+    }
+
+    result
+}
 
 
+pub fn reset_normals(model: &Vec<TexturedVertex>) -> Vec<TexturedVertex> {
+    let mut result: Vec<TexturedVertex> = Vec::new();
+
+    let mut iter = model.iter();
+    
+    loop {
+        let (a, b, c) = (
+            match iter.next() {
+                Some(value) => value,
+                None => break
+            }, 
+            match iter.next() {
+                Some(value) => value,
+                None => panic!("Model is not composed of triangles")
+            }, 
+            match iter.next() {
+                Some(value) => value,
+                None => panic!("Model is not composed of triangles")
+            }, 
+        );
+
+        let u = (b - a).position;
+        let v = (c - a).position;
+
+        let norm = [
+            u[1] * v[2] - u[2] * v[1],
+            u[2] * v[0] - u[0] * v[2],
+            u[0] * v[1] - u[1] * v[0],
+            0.0f32
+        ];
+
+        result.push(TexturedVertex::new(a.position, norm, a.uv));
+        result.push(TexturedVertex::new(b.position, norm, b.uv));
+        result.push(TexturedVertex::new(c.position, norm, c.uv));
 
     }
 

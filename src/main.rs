@@ -1,11 +1,16 @@
 #[macro_use]
 extern crate glium;
 extern crate image;
+extern crate noise;
+
+use noise::{NoiseFn, Perlin};
 
 mod obj_tools;
 mod types;
 
-use obj_tools::*;
+
+use types::TexturedVertex;
+use obj_tools::*;   
 
 
 fn main() {
@@ -16,7 +21,7 @@ fn main() {
     let cb = glium::glutin::ContextBuilder::new().with_depth_buffer(24);
     let display = glium::Display::new(wb, cb, &events_loop).unwrap();
 
-    let shape = sphereize(&subdivide(&parse_uv_obj("src/res/icosahedron.obj"), 10));
+    let shape = perlinize(&sphereize(&subdivide(&parse_uv_obj("src/res/icosahedron.obj"), 75)));
 
     let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
@@ -27,7 +32,8 @@ fn main() {
         in vec4 position;
         in vec4 normal;
         in vec3 uv;
-        out vec4 colr;
+        out vec3 transformed_normal;
+        out vec4 v_normal;
         uniform mat4 translate;
         uniform mat4 scale;
         uniform mat4 xRotation;
@@ -36,21 +42,30 @@ fn main() {
         uniform mat4 perspective;
 
         void main() {
-            mat4 transform = yRotation * xRotation * zRotation * scale;
-            vec4 preTranslate = transform * position;
-            colr = vec4(normalize(normalize(normal.xyz) + vec3(1, 1, 1)), .3);
-            gl_Position = perspective * translate * preTranslate;
+            mat4 transform = translate * yRotation * xRotation * zRotation * scale;
+            v_normal = normal;
+            transformed_normal = transpose(inverse(mat3(transform))) * normal.xyz;
+            gl_Position = perspective * transform * position;
         }
     "#;
 
     let fragment_shader_src = r#"
         #version 140
 
-        in vec4 colr;
+        in vec3 transformed_normal;
+        in vec4 v_normal;
         out vec4 color;
 
+        uniform vec3 u_light;
+
         void main() {
-            color = colr;
+
+            float brightness = dot(normalize(transformed_normal), normalize(u_light));
+
+            vec3 bright = normalize(normalize(v_normal.xyz) + vec3(1, 1, 1));
+            vec3 dark = bright * 0.3;
+
+            color = vec4(mix(dark, bright, brightness), 1.0);
         }
     "#;
 
@@ -145,7 +160,8 @@ fn main() {
             scale: scale, 
             yRotation: y_rotation,
             xRotation: x_rotation,
-            zRotation: z_rotation
+            zRotation: z_rotation,
+            u_light: [1.0, 1.0, -1.0f32]
         };
 
         let params = glium::DrawParameters {
@@ -172,4 +188,26 @@ fn main() {
             }
         });
     }
+}
+
+fn perlinize(model: &Vec<TexturedVertex>) -> Vec<TexturedVertex> {
+    let perlin = Perlin::new();
+    reset_normals(&model.iter().map(|value| {
+        TexturedVertex::new({
+
+            let noiz = noise::Clamp{source: &perlin, bounds: (-1.0, 1.0)}.get([
+                value.position[0] as f64,
+                value.position[1] as f64,
+                value.position[2] as f64,
+            ]) as f32;
+
+            let noiz = ((noiz + 1.0) * 0.5) * ((noiz + 1.0) * 0.5) + 0.5;
+            [
+                value.position[0] * noiz,
+                value.position[1] * noiz,
+                value.position[2] * noiz,
+                1.0f32
+            ]
+        }, value.normal, value.uv)
+    }).collect())
 }
